@@ -91,8 +91,7 @@ Cache_t* newCache(int cachesize, int blocksize, int setsize, char* associativity
 int readFromCache(Cache_t *cache, char* address, char* tag, char* setid, char* offset, int len ) {
     Set_t set;
     Cache_Line_t *cache_line;
-    int i,size, found, lowest_index;
-    unsigned int lowest_timestamp, temp;
+    int i,size, found, lowest_index, lowest_count, temp;
     found = 0;
    /*
     * iterate over the lines of the set
@@ -108,8 +107,11 @@ int readFromCache(Cache_t *cache, char* address, char* tag, char* setid, char* o
             printf("checking lines, readFromCache\n");
         }
         cache_line = &set.lines[i];
+        /*
+         * Found
+         */ 
         if(cache_line->valid && strcmp(cache_line->tag, tag) == 0) {
-           cache_line->timestamp = currentTime();
+           cache_line->counter++;
            cache->hits++; 
            return 1; 
         }
@@ -124,21 +126,21 @@ int readFromCache(Cache_t *cache, char* address, char* tag, char* setid, char* o
         cache_line->tag = tag;
         cache_line->valid = 1;
         cache_line->offset = offset;
-        if(strcmp("wb",cache->write_policy) == 0 && cache_line->dirty){
+        if(strcmp("wb",cache->write_policy) == 0 && cache_line->dirty == 1){
             cache->mem_writes++;
             cache_line->dirty = 0;
         }
-    }else if((strcmp("n-way",cache->associativity) == 0) ||(strcmp("assoc", cache->associativity) == 0)) {
+    }else{ 
        /*
         * Select a new line based on LRU
         *  line to be replaced should be the furthest accessed in time
         */
        lowest_index = 0;
-       lowest_timestamp = set.lines[0].timestamp;
+       lowest_count = set.lines[0].counter;
        for(i = 0; i < size; i++){
-            temp = set.lines[i].timestamp;
-            if( temp < lowest_timestamp ) {
-                lowest_timestamp = temp;
+            temp = set.lines[i].counter;
+            if( temp < lowest_count ) {
+                lowest_count = temp;
                 lowest_index = i;
             }
        }
@@ -161,8 +163,7 @@ int writeToCache(Cache_t *cache, char* address, char* tag, char* setid, char* of
     
     Set_t set;
     Cache_Line_t *cache_line;
-    int i,size, found, lowest_index;
-    unsigned int lowest_timestamp, temp;
+    int i,size, found, lowest_index, lowest_count, temp;
     found = 0;
     if(strcmp("assoc",cache->associativity) == 0){
         set = cache->sets[0];
@@ -184,7 +185,7 @@ int writeToCache(Cache_t *cache, char* address, char* tag, char* setid, char* of
             }
             cache->hits++; 
             cache_line->offset = offset;
-            cache_line->timestamp = currentTime();
+            cache_line->counter++; 
             cache_line->dirty = 1;
             return 1;          
         }
@@ -203,23 +204,23 @@ int writeToCache(Cache_t *cache, char* address, char* tag, char* setid, char* of
        cache_line->tag = tag;
        cache_line->valid = 1;
        cache_line->offset = offset;
+       cache_line->dirty = 1;
         if(strcmp("wt",cache->write_policy) == 0){
             cache->mem_writes++;
         }else if(strcmp("wb",cache->write_policy) == 0 && cache_line->dirty){
             cache->mem_writes++;
         }
-        cache_line->dirty = 1;
-    }else if(strcmp("n-way",cache->associativity) == 0) {
-       /*
+    }else{ 
+        /*
         * Select a new line based on LRU
         *  line to be replaced should be the furthest accessed in time
         */
-        lowest_index = 0;
-       lowest_timestamp = set.lines[0].timestamp;
+       lowest_index = 0;
+       lowest_count = set.lines[0].counter;
        for(i = 0; i < size; i++){
-            temp = set.lines[i].timestamp;
-            if( temp < lowest_timestamp ) {
-                lowest_timestamp = temp;
+            temp = set.lines[i].counter;
+            if( temp < lowest_count ) {
+                lowest_count = temp;
                 lowest_index = i;
             }
        }
@@ -227,12 +228,12 @@ int writeToCache(Cache_t *cache, char* address, char* tag, char* setid, char* of
        cache_line->tag = tag;
        cache_line->valid = 1;
        cache_line->offset = offset;
+       cache_line->dirty = 1;
         if(strcmp("wt",cache->write_policy) == 0){
             cache->mem_writes++;
-        }else if(strcmp("wb",cache->write_policy) == 0 && cache_line->dirty){
+        }else if(strcmp("wb",cache->write_policy) == 0 && cache_line->dirty == 1){
             cache->mem_writes++;
         }
-        cache_line->dirty = 1;
     }
     return 0;
 }
@@ -290,8 +291,8 @@ int isInCache(Cache_t *cache, char* address, char* tag, char* setid, char* offse
  * Print cache
  */
 void printCache(Cache_t *cache){
-    printf("memory reads: %i\n", cache->mem_reads);
-    printf("memory writes: %i\n", cache->mem_writes);
-    printf("cache hits: %i\n", cache->hits);
-    printf("cache misses: %i\n", cache->misses);
+    printf("Memory reads: %i\n", cache->mem_reads);
+    printf("Memory writes: %i\n", cache->mem_writes);
+    printf("Cache hits: %i\n", cache->hits);
+    printf("Cache misses: %i\n", cache->misses);
 }

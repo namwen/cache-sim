@@ -10,7 +10,6 @@ struct Cache_Line {
     char* offset;
     int counter;
     int dirty;
-    unsigned int timestamp;
 };
 
 struct Cache {

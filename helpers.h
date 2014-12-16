@@ -26,9 +26,5 @@ char *formatBinary(char *bstring, int tag, int index, int offset);
  */
 int isPowerOfTwo(int x);
 
-/*
- * return current time in microseconds
- */
-unsigned int currentTime();
 
 #endif

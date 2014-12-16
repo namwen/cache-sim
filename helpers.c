@@ -2,7 +2,6 @@
 #include <stdlib.h> 
 #include <string.h>
 #include <ctype.h>
-#include <sys/time.h>
 /*
  * int to binary
  */
@@ -121,17 +120,4 @@ char *formatBinary(char *bstring, int tag, int index, int offset)
  */
 int isPowerOfTwo(int x){
     return ((x != 0) && !(x & (x-1)));
-}
-
-
-/*
- * current time in microseonds
- */
-
-unsigned int currentTime(){
-    struct timeval tv;
-    unsigned int time;
-    gettimeofday(&tv, NULL);
-    time = (int) tv.tv_usec + tv.tv_sec;
-    return time;
 }
