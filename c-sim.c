@@ -8,18 +8,6 @@
 #include "files.h"
 #include "helpers.h"
 
-<<<<<<< HEAD
-/*
-unsigned int htoi(const char str[]);
-char *itob(unsigned int num);
-char *formatBinary(char *bstring, int tag, int index, int offset);
- */
-=======
-unsigned int htoi(const char str[]);
-char *itob(unsigned int num);
-char *formatBinary(char *bstring, int tag, int index, int offset);
- 
->>>>>>> 59f4c294c92c026c0d9d15ccfd2984234f2a3158
 typedef struct {
     int cachesize;
     int blocksize;
@@ -78,11 +66,7 @@ int main(int argc, char *argv[]){
     }else if( strcmp("assoc", argv[2]) == 0){
         params.associativity = "assoc";
     }else{
-<<<<<<< HEAD
         int i = 0, digit = 0;
-=======
-        int i = 0, digit;
->>>>>>> 59f4c294c92c026c0d9d15ccfd2984234f2a3158
         char* str = argv[2];
         char* test;
         while(str[i] != '\0'){
